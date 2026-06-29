@@ -82,15 +82,7 @@ import java.io.FileInputStream;
         @Permission(
             alias = "camera",
             strings = { Manifest.permission.CAMERA }
-        ),
-         @Permission(
-            alias = "gallery_pre13",
-            strings = { Manifest.permission.READ_EXTERNAL_STORAGE }
-         ),
-         @Permission(
-            alias = "gallery_13",
-            strings = { Manifest.permission.READ_MEDIA_IMAGES }
-         )
+        )
     }
 )
 
@@ -464,19 +456,7 @@ public class CameraModulePlugin extends Plugin {
 
         boolean granted;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            granted =
-                ContextCompat.checkSelfPermission(
-                    getContext(),
-                    Manifest.permission.READ_MEDIA_IMAGES
-                ) == PackageManager.PERMISSION_GRANTED;
-        } else {
-            granted =
-                ContextCompat.checkSelfPermission(
-                    getContext(),
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ) == PackageManager.PERMISSION_GRANTED;
-        }
+        granted = true;
 
         ret.put("granted", granted);
         ret.put("status", granted ? "granted" : "prompt");
