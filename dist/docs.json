@@ -1,0 +1,395 @@
+{
+  "api": {
+    "name": "CameraModulePlugin",
+    "slug": "cameramoduleplugin",
+    "docs": "",
+    "tags": [],
+    "methods": [
+      {
+        "name": "echo",
+        "signature": "(options: { value: string; }) => Promise<{ value: string; }>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ value: string; }"
+          }
+        ],
+        "returns": "Promise<{ value: string; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "echo"
+      },
+      {
+        "name": "checkPermission",
+        "signature": "() => Promise<PermissionStatus>",
+        "parameters": [],
+        "returns": "Promise<PermissionStatus>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "PermissionStatus"
+        ],
+        "slug": "checkpermission"
+      },
+      {
+        "name": "requestPermission",
+        "signature": "() => Promise<PermissionStatus>",
+        "parameters": [],
+        "returns": "Promise<PermissionStatus>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "PermissionStatus"
+        ],
+        "slug": "requestpermission"
+      },
+      {
+        "name": "checkAndRequestPermission",
+        "signature": "() => Promise<PermissionStatus>",
+        "parameters": [],
+        "returns": "Promise<PermissionStatus>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "PermissionStatus"
+        ],
+        "slug": "checkandrequestpermission"
+      },
+      {
+        "name": "getCameraCapabilities",
+        "signature": "() => Promise<CameraCapabilities>",
+        "parameters": [],
+        "returns": "Promise<CameraCapabilities>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "CameraCapabilities"
+        ],
+        "slug": "getcameracapabilities"
+      },
+      {
+        "name": "startPreview",
+        "signature": "() => Promise<void>",
+        "parameters": [],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "startpreview"
+      },
+      {
+        "name": "stopPreview",
+        "signature": "() => Promise<void>",
+        "parameters": [],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "stoppreview"
+      },
+      {
+        "name": "toggleFlash",
+        "signature": "(enable: boolean) => Promise<void>",
+        "parameters": [
+          {
+            "name": "enable",
+            "docs": "",
+            "type": "boolean"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "toggleflash"
+      },
+      {
+        "name": "hasFlash",
+        "signature": "() => Promise<boolean>",
+        "parameters": [],
+        "returns": "Promise<boolean>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "hasflash"
+      },
+      {
+        "name": "checkGalleryPermission",
+        "signature": "() => Promise<PermissionResult>",
+        "parameters": [],
+        "returns": "Promise<PermissionResult>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "PermissionResult"
+        ],
+        "slug": "checkgallerypermission"
+      },
+      {
+        "name": "requestGalleryPermission",
+        "signature": "() => Promise<PermissionResult>",
+        "parameters": [],
+        "returns": "Promise<PermissionResult>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "PermissionResult"
+        ],
+        "slug": "requestgallerypermission"
+      },
+      {
+        "name": "checkAndRequestGalleryPermission",
+        "signature": "() => Promise<PermissionResult>",
+        "parameters": [],
+        "returns": "Promise<PermissionResult>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "PermissionResult"
+        ],
+        "slug": "checkandrequestgallerypermission"
+      },
+      {
+        "name": "pickImageBase64",
+        "signature": "() => Promise<PickImageBase64Result>",
+        "parameters": [],
+        "returns": "Promise<PickImageBase64Result>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "PickImageBase64Result"
+        ],
+        "slug": "pickimagebase64"
+      },
+      {
+        "name": "getLastGalleryImage",
+        "signature": "() => Promise<LastGalleryImageResult>",
+        "parameters": [],
+        "returns": "Promise<LastGalleryImageResult>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "LastGalleryImageResult"
+        ],
+        "slug": "getlastgalleryimage"
+      },
+      {
+        "name": "takePhotoBase64",
+        "signature": "() => Promise<takephotoBase64Result>",
+        "parameters": [],
+        "returns": "Promise<takephotoBase64Result>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "takephotoBase64Result"
+        ],
+        "slug": "takephotobase64"
+      },
+      {
+        "name": "startBarcodeScan",
+        "signature": "() => Promise<startBarcodeScanResult>",
+        "parameters": [],
+        "returns": "Promise<startBarcodeScanResult>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "startBarcodeScanResult"
+        ],
+        "slug": "startbarcodescan"
+      },
+      {
+        "name": "stopBarcodeScan",
+        "signature": "() => Promise<void>",
+        "parameters": [],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "stopbarcodescan"
+      }
+    ],
+    "properties": []
+  },
+  "interfaces": [
+    {
+      "name": "PermissionStatus",
+      "slug": "permissionstatus",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "granted",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean"
+        },
+        {
+          "name": "status",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "'granted' | 'denied' | 'prompt' | 'prompt-with-rationale' | 'limited'"
+        },
+        {
+          "name": "details",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    },
+    {
+      "name": "CameraCapabilities",
+      "slug": "cameracapabilities",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "hasCamera",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean"
+        },
+        {
+          "name": "isSecureContext",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean"
+        },
+        {
+          "name": "userAgent",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "PermissionResult",
+      "slug": "permissionresult",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "granted",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean"
+        },
+        {
+          "name": "status",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "'granted' | 'denied' | 'prompt'"
+        },
+        {
+          "name": "details",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    },
+    {
+      "name": "PickImageBase64Result",
+      "slug": "pickimagebase64result",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "base64",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "mimeType",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    },
+    {
+      "name": "LastGalleryImageResult",
+      "slug": "lastgalleryimageresult",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "base64",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "takephotoBase64Result",
+      "slug": "takephotobase64result",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "base64",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "mimeType",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "startBarcodeScanResult",
+      "slug": "startbarcodescanresult",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "rawValue",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "format",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number"
+        }
+      ]
+    }
+  ],
+  "enums": [],
+  "typeAliases": [],
+  "pluginConfigs": []
+}
