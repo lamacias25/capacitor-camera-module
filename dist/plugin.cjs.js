@@ -173,7 +173,30 @@ class CameraModuleWeb extends core.WebPlugin {
         console.log(_enable);
         console.warn('[CameraModule] toggleFlash is not supported on web ');
     }
-
+    async checkGalleryPermission() {
+        return {
+            granted: true,
+            status: 'granted',
+            details: 'Web does not require gallery permission',
+        };
+    }
+    async requestGalleryPermission() {
+        return {
+            granted: true,
+            status: 'granted',
+            details: 'Web does not require gallery permission',
+        };
+    }
+    async checkAndRequestGalleryPermission() {
+        return this.checkGalleryPermission();
+    }
+    /* Imagen */
+    async pickImageBase64() {
+        throw new Error('[CameraModule] pickImageBase64 is not supported on web');
+    }
+    async getLastGalleryImage() {
+        throw new Error('[CameraModule] getLastGalleryImage is not supported on web');
+    }
     async takePhotoBase64() {
         throw this.unavailable('Camera not available on web');
     }
