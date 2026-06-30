@@ -25,17 +25,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import androidx.camera.core.Camera;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.util.Base64;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-
-import android.database.Cursor;
-import android.content.ContentUris;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -93,8 +83,6 @@ public class CameraModulePlugin extends Plugin {
 
     private Camera camera;
 
-    private ActivityResultLauncher<Intent> galleryLauncher;
-    private PluginCall savedCall;
 
     private ImageCapture imageCapture;
 
@@ -115,36 +103,6 @@ public class CameraModulePlugin extends Plugin {
         super.load();
         getBridge().getWebView().setBackgroundColor(0x00000000);
 
-        galleryLauncher =
-                bridge.registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (savedCall == null) return;
-
-                        if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                            Uri uri = result.getData().getData();
-
-                            try {
-                                String base64 = uriToBase64(uri);
-                                String mimeType = getContext()
-                                    .getContentResolver()
-                                    .getType(uri);
-
-                                JSObject ret = new JSObject();
-                                ret.put("base64", base64);
-                                ret.put("mimeType", mimeType);
-
-                                savedCall.resolve(ret);
-                            } catch (Exception e) {
-                                savedCall.reject("Error reading image", e);
-                            }
-                        } else {
-                            savedCall.reject("Image selection canceled");
-                        }
-
-                        savedCall = null;
-                    }
-                );
     }
 
     @PluginMethod
@@ -355,63 +313,7 @@ public class CameraModulePlugin extends Plugin {
     }
 
 
-    @PluginMethod
-    public void pickImageBase64(PluginCall call) {
 
-        String alias =
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                ? "gallery_13"
-                : "gallery_pre13";
-
-        if (getPermissionState(alias) != PermissionState.GRANTED) {
-            call.reject("Gallery permission not granted");
-            return;
-        }
-
-        if (savedCall != null) {
-            call.reject("Gallery already open");
-            return;
-        }
-        savedCall = call;
-
-        Intent intent = new Intent(
-            Intent.ACTION_PICK,
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        );
-        intent.setType("image/*");
-
-        galleryLauncher.launch(intent);
-    }
-
-
-
-    private String uriToBase64(Uri uri) throws Exception {
-        InputStream inputStream =
-            getContext().getContentResolver().openInputStream(uri);
-
-        if (inputStream == null) {
-            throw new Exception("Unable to open input stream");
-        }
-
-        Bitmap originalBitmap = BitmapFactory.decodeStream(inputStream);
-        inputStream.close();
-
-        if (originalBitmap == null) {
-            throw new Exception("Unable to decode bitmap");
-        }
-
-        Bitmap resizedBitmap = resizeBitmap(originalBitmap, 1024);
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream);
-
-        byte[] imageBytes = outputStream.toByteArray();
-
-        originalBitmap.recycle();
-        resizedBitmap.recycle();
-
-        return Base64.encodeToString(imageBytes, Base64.NO_WRAP);
-    }
 
 
     private Bitmap resizeBitmap(Bitmap bitmap, int maxSize) {
@@ -441,116 +343,6 @@ public class CameraModulePlugin extends Plugin {
         return Bitmap.createScaledBitmap(bitmap, width, height, true);
     }
 
-    //Plugin request permission gallery
-    @PluginMethod
-    public void checkGalleryPermission(PluginCall call) {
-        JSObject ret = new JSObject();
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            ret.put("granted", true);
-            ret.put("status", "granted");
-            ret.put("details", "Pre-Marshmallow, granted at install");
-            call.resolve(ret);
-            return;
-        }
-
-        boolean granted;
-
-        granted = true;
-
-        ret.put("granted", granted);
-        ret.put("status", granted ? "granted" : "prompt");
-        ret.put("details", "Android SDK " + Build.VERSION.SDK_INT);
-
-        call.resolve(ret);
-    }
-
-    @PluginMethod
-    public void requestGalleryPermission(PluginCall call) {
-        String alias = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ? "gallery_13" : "gallery_pre13";
-
-        if (getPermissionState(alias) != PermissionState.GRANTED) {
-            requestPermissionForAlias(alias, call, "galleryPermissionCallback");
-        } else {
-            JSObject ret = new JSObject();
-            ret.put("granted", true);
-            ret.put("status", "granted");
-            ret.put("details", "Already granted");
-            call.resolve(ret);
-        }
-    }
-
-    @PermissionCallback
-    private void galleryPermissionCallback(PluginCall call) {
-        boolean granted;
-        String alias = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ? "gallery_13" : "gallery_pre13";
-        granted = getPermissionState(alias) == PermissionState.GRANTED;
-
-        JSObject ret = new JSObject();
-        ret.put("granted", granted);
-        ret.put("status", granted ? "granted" : "denied");
-        ret.put("details", "Permission request completed");
-        call.resolve(ret);
-    }
-
-
-
-    @PluginMethod
-    public void checkAndRequestGalleryPermission(PluginCall call) {
-        String alias =
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                ? "gallery_13"
-                : "gallery_pre13";
-
-        if (getPermissionState(alias) == PermissionState.GRANTED) {
-            JSObject ret = new JSObject();
-            ret.put("granted", true);
-            ret.put("status", "granted");
-            ret.put("details", "Already granted");
-            call.resolve(ret);
-        } else {
-            requestGalleryPermission(call);
-        }
-    }
-
-    @PluginMethod
-    public void getLastGalleryImage(PluginCall call) {
-
-        String alias = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ? "gallery_13" : "gallery_pre13";
-
-        if (getPermissionState(alias) != PermissionState.GRANTED) {
-            call.reject("Gallery permission not granted");
-            return;
-        }
-
-        Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-
-        String[] projection = { MediaStore.Images.Media._ID };
-        String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
-
-        try (Cursor cursor = getContext().getContentResolver().query(
-                uri,
-                projection,
-                null,
-                null,
-                sortOrder
-        )) {
-            if (cursor != null && cursor.moveToFirst()) {
-                long id = cursor.getLong(0);
-                Uri imageUri = ContentUris.withAppendedId(uri, id);
-
-                String base64 = uriToBase64(imageUri);
-
-                JSObject ret = new JSObject();
-                ret.put("base64", base64);
-                call.resolve(ret);
-            } else {
-                call.reject("No images found");
-            }
-        } catch (Exception e) {
-            call.reject("Error fetching last image", e);
-        }
-    }
 
 
     @PluginMethod

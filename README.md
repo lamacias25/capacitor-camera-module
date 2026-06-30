@@ -22,11 +22,7 @@ npx cap sync
 * [`stopPreview()`](#stoppreview)
 * [`toggleFlash(...)`](#toggleflash)
 * [`hasFlash()`](#hasflash)
-* [`checkGalleryPermission()`](#checkgallerypermission)
-* [`requestGalleryPermission()`](#requestgallerypermission)
-* [`checkAndRequestGalleryPermission()`](#checkandrequestgallerypermission)
-* [`pickImageBase64()`](#pickimagebase64)
-* [`getLastGalleryImage()`](#getlastgalleryimage)
+
 * [`takePhotoBase64()`](#takephotobase64)
 * [`startBarcodeScan()`](#startbarcodescan)
 * [`stopBarcodeScan()`](#stopbarcodescan)
@@ -138,59 +134,7 @@ hasFlash() => Promise<boolean>
 --------------------
 
 
-### checkGalleryPermission()
 
-```typescript
-checkGalleryPermission() => Promise<PermissionResult>
-```
-
-**Returns:** <code>Promise&lt;<a href="#permissionresult">PermissionResult</a>&gt;</code>
-
---------------------
-
-
-### requestGalleryPermission()
-
-```typescript
-requestGalleryPermission() => Promise<PermissionResult>
-```
-
-**Returns:** <code>Promise&lt;<a href="#permissionresult">PermissionResult</a>&gt;</code>
-
---------------------
-
-
-### checkAndRequestGalleryPermission()
-
-```typescript
-checkAndRequestGalleryPermission() => Promise<PermissionResult>
-```
-
-**Returns:** <code>Promise&lt;<a href="#permissionresult">PermissionResult</a>&gt;</code>
-
---------------------
-
-
-### pickImageBase64()
-
-```typescript
-pickImageBase64() => Promise<PickImageBase64Result>
-```
-
-**Returns:** <code>Promise&lt;<a href="#pickimagebase64result">PickImageBase64Result</a>&gt;</code>
-
---------------------
-
-
-### getLastGalleryImage()
-
-```typescript
-getLastGalleryImage() => Promise<LastGalleryImageResult>
-```
-
-**Returns:** <code>Promise&lt;<a href="#lastgalleryimageresult">LastGalleryImageResult</a>&gt;</code>
-
---------------------
 
 
 ### takePhotoBase64()
@@ -245,28 +189,7 @@ stopBarcodeScan() => Promise<void>
 | **`userAgent`**       | <code>string</code>  |
 
 
-#### PermissionResult
 
-| Prop          | Type                                           |
-| ------------- | ---------------------------------------------- |
-| **`granted`** | <code>boolean</code>                           |
-| **`status`**  | <code>'granted' \| 'denied' \| 'prompt'</code> |
-| **`details`** | <code>string</code>                            |
-
-
-#### PickImageBase64Result
-
-| Prop           | Type                |
-| -------------- | ------------------- |
-| **`base64`**   | <code>string</code> |
-| **`mimeType`** | <code>string</code> |
-
-
-#### LastGalleryImageResult
-
-| Prop         | Type                |
-| ------------ | ------------------- |
-| **`base64`** | <code>string</code> |
 
 
 #### takephotoBase64Result

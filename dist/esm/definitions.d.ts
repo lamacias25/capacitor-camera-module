@@ -12,11 +12,7 @@ export interface CameraModulePlugin {
     stopPreview(): Promise<void>;
     toggleFlash(enable: boolean): Promise<void>;
     hasFlash(): Promise<boolean>;
-    checkGalleryPermission(): Promise<PermissionResult>;
-    requestGalleryPermission(): Promise<PermissionResult>;
-    checkAndRequestGalleryPermission(): Promise<PermissionResult>;
-    pickImageBase64(): Promise<PickImageBase64Result>;
-    getLastGalleryImage(): Promise<LastGalleryImageResult>;
+
     takePhotoBase64(): Promise<takephotoBase64Result>;
     startBarcodeScan(): Promise<startBarcodeScanResult>;
     stopBarcodeScan(): Promise<void>;
@@ -31,18 +27,7 @@ export interface CameraCapabilities {
     isSecureContext: boolean;
     userAgent: string;
 }
-export interface PermissionResult {
-    granted: boolean;
-    status: 'granted' | 'denied' | 'prompt';
-    details?: string;
-}
-export interface PickImageBase64Result {
-    base64: string;
-    mimeType?: string;
-}
-export interface LastGalleryImageResult {
-    base64: string;
-}
+
 export interface startBarcodeScanResult {
     rawValue: string;
     format: number;

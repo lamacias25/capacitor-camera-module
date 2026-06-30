@@ -2,7 +2,6 @@ import Capacitor
 import AVFoundation
 import Vision
 import UIKit
-import Photos
 
 @objc(CameraModule)
 public class CameraModulePlugin: CAPPlugin, CAPBridgedPlugin, AVCaptureVideoDataOutputSampleBufferDelegate {
@@ -12,18 +11,13 @@ public class CameraModulePlugin: CAPPlugin, CAPBridgedPlugin, AVCaptureVideoData
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "checkPermission", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "requestPermission", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "checkGalleryPermission", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "requestGalleryPermission", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "checkAndRequestGalleryPermission", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "pickImageBase64", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "startPreview", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "stopPreview", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "toggleFlash", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "hasFlash", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "takePhotoBase64", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "startBarcodeScan", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "stopBarcodeScan", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "getLastGalleryImage", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "stopBarcodeScan", returnType: CAPPluginReturnPromise)
     ]
 
     private var previewView: UIView?
@@ -42,9 +36,6 @@ public class CameraModulePlugin: CAPPlugin, CAPBridgedPlugin, AVCaptureVideoData
     private var lastScanTime: Date?
     private let scanDebounceInterval: TimeInterval = 0.5
 
-    // MARK: - Gallery
-
-    private var galleryCall: CAPPluginCall?
 
     // MARK: - Lifecycle
     public override func load() {
@@ -72,66 +63,6 @@ public class CameraModulePlugin: CAPPlugin, CAPBridgedPlugin, AVCaptureVideoData
         }
     }
 
-    // MARK: - Gallery Permission
-
-    @objc func checkGalleryPermission(_ call: CAPPluginCall) {
-        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-
-        switch status {
-        case .authorized, .limited:
-            call.resolve(["granted": true, "status": "granted"])
-        case .notDetermined:
-            call.resolve(["granted": false, "status": "prompt"])
-        default:
-            call.resolve(["granted": false, "status": "denied"])
-        }
-    }
-
-    @objc func requestGalleryPermission(_ call: CAPPluginCall) {
-        PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
-            DispatchQueue.main.async {
-                let granted = (status == .authorized || status == .limited)
-                call.resolve([
-                    "granted": granted,
-                    "status": granted ? "granted" : "denied"
-                ])
-            }
-        }
-    }
-
-    @objc func checkAndRequestGalleryPermission(_ call: CAPPluginCall) {
-        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-        if status == .authorized || status == .limited {
-            call.resolve(["granted": true, "status": "granted"])
-        } else {
-            requestGalleryPermission(call)
-        }
-    }
-
-    // MARK: - Pick Image
-
-    @objc func pickImageBase64(_ call: CAPPluginCall) {
-        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-        guard status == .authorized || status == .limited else {
-            call.reject("Gallery permission not granted")
-            return
-        }
-
-        guard galleryCall == nil else {
-            call.reject("Gallery already open")
-            return
-        }
-
-        galleryCall = call
-
-        DispatchQueue.main.async {
-            let picker = UIImagePickerController()
-            picker.sourceType = .photoLibrary
-            picker.delegate = self
-            picker.modalPresentationStyle = .fullScreen
-            self.bridge?.viewController?.present(picker, animated: true)
-        }
-    }
 
     // MARK: - Camera Preview
 
@@ -304,51 +235,6 @@ public class CameraModulePlugin: CAPPlugin, CAPBridgedPlugin, AVCaptureVideoData
         ])
     }
 
-    @objc func getLastGalleryImage(_ call: CAPPluginCall) {
-
-        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-
-        guard status == .authorized || status == .limited else {
-            call.reject("Gallery permission not granted")
-            return
-        }
-
-        let fetchOptions = PHFetchOptions()
-        fetchOptions.sortDescriptors = [
-            NSSortDescriptor(key: "creationDate", ascending: false)
-        ]
-        fetchOptions.fetchLimit = 1
-
-        let assets = PHAsset.fetchAssets(with: .image, options: fetchOptions)
-
-        guard let asset = assets.firstObject else {
-            call.reject("No images found")
-            return
-        }
-
-        let imageManager = PHImageManager.default()
-        let options = PHImageRequestOptions()
-        options.isSynchronous = true
-        options.deliveryMode = .highQualityFormat
-        options.resizeMode = .none
-
-        imageManager.requestImageDataAndOrientation(
-            for: asset,
-            options: options
-        ) { data, _, _, _ in
-
-            guard let imageData = data else {
-                call.reject("Error fetching last image")
-                return
-            }
-
-            let base64 = imageData.base64EncodedString()
-
-            var ret = JSObject()
-            ret["base64"] = base64
-            call.resolve(ret)
-        }
-    }
 
     // MARK: - Photo Capture
 
@@ -495,35 +381,6 @@ public class CameraModulePlugin: CAPPlugin, CAPBridgedPlugin, AVCaptureVideoData
     }
 }
 
-// MARK: - UIImagePicker Delegate
-extension CameraModulePlugin: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-
-    public func imagePickerController(_ picker: UIImagePickerController,
-                                      didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-
-        picker.dismiss(animated: true)
-
-        guard let image = info[.originalImage] as? UIImage,
-              let resized = image.resized(maxSize: 1024),
-              let jpeg = resized.jpegData(compressionQuality: 0.8) else {
-            galleryCall?.reject("Unable to process image")
-            galleryCall = nil
-            return
-        }
-
-        galleryCall?.resolve([
-            "base64": jpeg.base64EncodedString(),
-            "mimeType": "image/jpeg"
-        ])
-        galleryCall = nil
-    }
-
-    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true)
-        galleryCall?.reject("Image selection canceled")
-        galleryCall = nil
-    }
-}
 
 // MARK: - UIImage Resize
 extension UIImage {
