@@ -167,57 +167,6 @@ public class CameraModulePlugin: CAPPlugin, CAPBridgedPlugin, AVCaptureVideoData
         }
     }
 
-    // Método para clasificar la foto tomada en iOS
-    @objc func classifyPhoto(_ call: CAPPluginCall) {
-        // Asumiendo que capturas la imagen como UIImage
-        guard let photoData = self.lastCapturedImageData,
-              let image = UIImage(data: photoData),
-              let ciImage = CIImage(image: image) else {
-            call.reject("No image available to process")
-            return
-        }
-
-        let request = VNClassifyImageRequest { request, error in
-            if let error = error {
-                call.reject("Classification error: \(error.localizedDescription)")
-                return
-            }
-
-            guard let results = request.results as? [VNClassificationObservation] else {
-                call.reject("No classification results found")
-                return
-            }
-
-            let topResults = results.prefix(5)
-            var labelArray: [[String: Any]] = []
-            var primaryLabel = ""
-
-            for classification in topResults {
-                if primaryLabel.isEmpty {
-                    primaryLabel = classification.identifier
-                }
-                labelArray.append([
-                    "label": classification.identifier,
-                    "confidence": classification.confidence
-                ])
-            }
-
-            call.resolve([
-                "primaryLabel": primaryLabel,
-                "labels": labelArray
-            ])
-        }
-
-        let handler = VNImageRequestHandler(ciImage: ciImage, options: [:])
-        DispatchQueue.global(qos: .userInitiated).async {
-            do {
-                try handler.perform([request])
-            } catch {
-                call.reject("Failed to perform classification")
-            }
-        }
-    }
-
     @objc func stopPreview(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
 

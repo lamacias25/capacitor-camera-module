@@ -663,14 +663,14 @@ public class CameraModulePlugin extends Plugin {
     }
 
 @PluginMethod
-public void classifyCapturedPhoto(PluginCall call) {
+public void classifyPhoto(PluginCall call) {
     if (imageCapture == null) {
         call.reject("Camera not initialized");
         return;
     }
 
     try {
-        File photoFile = File.createTempFile("label_", ".jpg", getContext().getCacheDir());
+        File photoFile = File.createTempFile("photo_", ".jpg", getContext().getCacheDir());
         ImageCapture.OutputFileOptions options = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
 
         imageCapture.takePicture(
@@ -680,14 +680,13 @@ public void classifyCapturedPhoto(PluginCall call) {
                 @Override
                 public void onImageSaved(@NonNull ImageCapture.OutputFileResults output) {
                     try {
-                        Bitmap bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
-                        bitmap = rotateBitmapIfRequired(bitmap, photoFile);
-                        Bitmap resized = resizeBitmap(bitmap, 1024);
+                        Bitmap originalBitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
+                        Bitmap rotated = rotateBitmapIfRequired(originalBitmap, photoFile);
+                        
+                        // Declarar como FINAL para que sea legal dentro de las Lambdas de ML Kit
+                        final Bitmap finalBitmap = resizeBitmap(rotated, 1024);
 
-                        // Crear InputImage desde el Bitmap
-                        InputImage image = InputImage.fromBitmap(resized, 0);
-
-                        // Inicializar el clasificador por defecto de ML Kit (confianza mínima 50%)
+                        InputImage image = InputImage.fromBitmap(finalBitmap, 0);
                         ImageLabeler labeler = ImageLabeling.getClient(
                             new ImageLabelerOptions.Builder()
                                 .setConfidenceThreshold(0.5f)
@@ -700,7 +699,7 @@ public void classifyCapturedPhoto(PluginCall call) {
                                 String primaryLabel = "";
 
                                 for (ImageLabel label : labels) {
-                                    String text = label.getText(); // ej: "Laptop", "Computer"
+                                    String text = label.getText();
                                     float confidence = label.getConfidence();
 
                                     JSObject obj = new JSObject();
@@ -709,47 +708,48 @@ public void classifyCapturedPhoto(PluginCall call) {
                                     labelList.put(obj);
 
                                     if (primaryLabel.isEmpty()) {
-                                        primaryLabel = text; // Toma la primera etiqueta (mayor confianza)
+                                        primaryLabel = text;
                                     }
                                 }
 
-                                // Convertir la imagen a base64 por si también la necesitas en el cliente
                                 ByteArrayOutputStream out = new ByteArrayOutputStream();
-                                resized.compress(Bitmap.CompressFormat.JPEG, 80, out);
+                                finalBitmap.compress(Bitmap.CompressFormat.JPEG, 80, out);
                                 String base64 = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
 
-                                // Limpiar memoria
-                                bitmap.recycle();
-                                resized.recycle();
-                                photoFile.delete();
+                                // Liberar memoria usando la variable final
+                                finalBitmap.recycle();
+                                if (photoFile.exists()) {
+                                    photoFile.delete();
+                                }
 
                                 JSObject ret = new JSObject();
-                                ret.put("primaryLabel", primaryLabel); // Ejemplo: "Laptop"
-                                ret.put("labels", labelList);           // Lista completa con puntuaciones
+                                ret.put("primaryLabel", primaryLabel);
+                                ret.put("labels", labelList);
                                 ret.put("base64", base64);
                                 call.resolve(ret);
                             })
                             .addOnFailureListener(e -> {
-                                bitmap.recycle();
-                                resized.recycle();
-                                photoFile.delete();
-                                call.reject("Failed to label image", e);
+                                // Liberar memoria usando la variable final
+                                finalBitmap.recycle();
+                                if (photoFile.exists()) {
+                                    photoFile.delete();
+                                }
+                                call.reject("Error en clasificación", e);
                             });
 
                     } catch (Exception e) {
-                        call.reject("Error processing image classification", e);
+                        call.reject("Error al procesar la imagen", e);
                     }
                 }
 
                 @Override
                 public void onError(@NonNull ImageCaptureException exception) {
-                    call.reject("Capture failed", exception);
+                    call.reject("Fallo al capturar imagen", exception);
                 }
             }
         );
-
     } catch (Exception e) {
-        call.reject("Error creating temporary file", e);
+        call.reject("Error creando archivo temporal", e);
     }
 }
 

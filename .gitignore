@@ -1,0 +1,36 @@
+# Dependencias de Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Salidas de compilación JavaScript (se generará durante el build en MABS / CI)
+# Nota: Si distribuyes tu plugin vía npm sin proceso de build remoto, puedes incluir dist/,
+# pero si compilas nativamente o desde repositorio público, suele omitirse o mantenerse limpio.
+dist/
+build/
+
+# Archivos del sistema operativo y editores
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+*.tmp
+.vscode/
+.idea/
+
+# Android Studio y Gradle
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/*.iml
+android/app/*.iml
+
+# Xcode e iOS
+ios/DerivedData/
+ios/Pods/
+ios/*.xcodeproj/project.xcworkspace
+ios/*.xcodeproj/xcuserdata/
