@@ -66,12 +66,6 @@ import java.io.File;
 import androidx.exifinterface.media.ExifInterface;
 import java.io.FileInputStream;
 
-import com.google.mlkit.vision.label.ImageLabel;
-import com.google.mlkit.vision.label.ImageLabeler;
-import com.google.mlkit.vision.label.ImageLabeling;
-import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
-import com.getcapacitor.JSArray;
-
 @CapacitorPlugin(
     name = "CameraModule",
     permissions = {
@@ -662,96 +656,7 @@ public class CameraModulePlugin extends Plugin {
         return rotated;
     }
 
-@PluginMethod
-public void classifyCapturedPhoto(PluginCall call) {
-    if (imageCapture == null) {
-        call.reject("Camera not initialized");
-        return;
-    }
 
-    try {
-        File photoFile = File.createTempFile("label_", ".jpg", getContext().getCacheDir());
-        ImageCapture.OutputFileOptions options = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
-
-        imageCapture.takePicture(
-            options,
-            ContextCompat.getMainExecutor(getContext()),
-            new ImageCapture.OnImageSavedCallback() {
-                @Override
-                public void onImageSaved(@NonNull ImageCapture.OutputFileResults output) {
-                    try {
-                        Bitmap bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
-                        bitmap = rotateBitmapIfRequired(bitmap, photoFile);
-                        Bitmap resized = resizeBitmap(bitmap, 1024);
-
-                        // Crear InputImage desde el Bitmap
-                        InputImage image = InputImage.fromBitmap(resized, 0);
-
-                        // Inicializar el clasificador por defecto de ML Kit (confianza mínima 50%)
-                        ImageLabeler labeler = ImageLabeling.getClient(
-                            new ImageLabelerOptions.Builder()
-                                .setConfidenceThreshold(0.5f)
-                                .build()
-                        );
-
-                        labeler.process(image)
-                            .addOnSuccessListener(labels -> {
-                                JSArray labelList = new JSArray();
-                                String primaryLabel = "";
-
-                                for (ImageLabel label : labels) {
-                                    String text = label.getText(); // ej: "Laptop", "Computer"
-                                    float confidence = label.getConfidence();
-
-                                    JSObject obj = new JSObject();
-                                    obj.put("label", text);
-                                    obj.put("confidence", confidence);
-                                    labelList.put(obj);
-
-                                    if (primaryLabel.isEmpty()) {
-                                        primaryLabel = text; // Toma la primera etiqueta (mayor confianza)
-                                    }
-                                }
-
-                                // Convertir la imagen a base64 por si también la necesitas en el cliente
-                                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                                resized.compress(Bitmap.CompressFormat.JPEG, 80, out);
-                                String base64 = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
-
-                                // Limpiar memoria
-                                bitmap.recycle();
-                                resized.recycle();
-                                photoFile.delete();
-
-                                JSObject ret = new JSObject();
-                                ret.put("primaryLabel", primaryLabel); // Ejemplo: "Laptop"
-                                ret.put("labels", labelList);           // Lista completa con puntuaciones
-                                ret.put("base64", base64);
-                                call.resolve(ret);
-                            })
-                            .addOnFailureListener(e -> {
-                                bitmap.recycle();
-                                resized.recycle();
-                                photoFile.delete();
-                                call.reject("Failed to label image", e);
-                            });
-
-                    } catch (Exception e) {
-                        call.reject("Error processing image classification", e);
-                    }
-                }
-
-                @Override
-                public void onError(@NonNull ImageCaptureException exception) {
-                    call.reject("Capture failed", exception);
-                }
-            }
-        );
-
-    } catch (Exception e) {
-        call.reject("Error creating temporary file", e);
-    }
-}
 
 
 }

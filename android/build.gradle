@@ -96,5 +96,4 @@ dependencies {
     implementation "com.google.guava:guava:33.4.8-android"
 
     implementation "com.google.mlkit:barcode-scanning:17.3.0"
-    implementation 'com.google.mlkit:image-labeling:17.0.8'
 }
